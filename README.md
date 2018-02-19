@@ -14,6 +14,8 @@ python convert.py -i "The Tower of the Swallow.aax" -o "The Tower of the Swallow
 
 and have your owned aax converted into mp3s, split by chapters.
 
+Use `-t "The Tower %s(chapter)"` to specify mp3 title.
+
 ## Why?
 
 Even though the above mentioned tutorial works great, my mp3 player 

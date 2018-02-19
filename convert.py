@@ -18,14 +18,23 @@ def get_chapters(ffmpeg, input):
     return chapters
 
 
-def parse_chapters(ffmpeg, chapters, input, output, activation_bytes, bitrate):
+def parse_chapters(ffmpeg, chapters, input, output, activation_bytes, bitrate, title):
     for chapter in chapters['chapters']:
-        cmd = ['%s/ffmpeg' % ffmpeg, '-y', '-activation_bytes', activation_bytes, '-i', input, '-ab', bitrate,
-               '-ss', chapter['start_time'], '-to', chapter['end_time'], '-vn',
-               output % {'chapter': chapter['tags']['title'], 'bitrate': bitrate}]
+        title = chapter['tags']['title']
+        match = re.match('Chapter (\d+)', title)
+        if match:
+            title = 'Chapter %02d' % int(match.group(1))
 
+        args = {'chapter': title, 'bitrate': bitrate}
+        cmd = ['%s/ffmpeg' % ffmpeg, '-y', '-activation_bytes', activation_bytes, '-i', input, '-ab', bitrate,
+               '-ss', chapter['start_time'], '-to', chapter['end_time']]
+
+        if title is not None:
+            cmd.extend(['-metadata', 'title=%s' % (title % args)])
+
+        cmd.extend(['-vn', output % args])
         print(cmd)
-        # subprocess.check_output(cmd, universal_newlines=True)
+        subprocess.check_output(cmd, universal_newlines=True)
 
 
 if __name__ == '__main__':
@@ -33,6 +42,8 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--input', help='Input file name', required=True)
     parser.add_argument('-o', '--output',
                         help='Output file pattern (with two "%(chapter)s" and %(bitrate)" placeholders)', required=True)
+    parser.add_argument('-t', '--title',
+                        help='Title of mp3 pattern (with two "%(chapter)s" and %(bitrate)" placeholders)')
     parser.add_argument('-a', '--activation-bytes', help='Activation bytes', required=True)
     parser.add_argument('-b', '--bitrate', help='Bitrate', default='64k')
     parser.add_argument('--ffmpeg', help='Path do directory containing ffmpeg/ffprobe', default='ffmpeg/bin')
@@ -45,5 +56,6 @@ if __name__ == '__main__':
     bitrate = namespace.bitrate
     ffmpeg = namespace.ffmpeg
     chapters = get_chapters(ffmpeg, input)
+    title = namespace.title
     print(chapters)
-    parse_chapters(ffmpeg, chapters, input, output, activation_bytes, bitrate)
+    parse_chapters(ffmpeg, chapters, input, output, activation_bytes, bitrate, title)
