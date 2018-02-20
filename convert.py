@@ -33,7 +33,6 @@ def parse_chapters(ffmpeg, chapters, input, output, activation_bytes, bitrate, a
         cmd.extend(['-vn', output % i])
         print(cmd)
         subprocess.check_output(cmd, universal_newlines=True)
-        break
 
 
 if __name__ == '__main__':
