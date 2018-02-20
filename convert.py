@@ -18,35 +18,33 @@ def get_chapters(ffmpeg, input):
     return chapters
 
 
-def parse_chapters(ffmpeg, chapters, input, output, activation_bytes, bitrate, title):
+def parse_chapters(ffmpeg, chapters, input, output, activation_bytes, bitrate, album):
+    i = 0
     for chapter in chapters['chapters']:
+        i += 1
         title = chapter['tags']['title']
-        match = re.match('Chapter (\d+)', title)
-        if match:
-            title = 'Chapter %02d' % int(match.group(1))
 
-        args = {'chapter': title, 'bitrate': bitrate}
         cmd = ['%s/ffmpeg' % ffmpeg, '-y', '-activation_bytes', activation_bytes, '-i', input, '-ab', bitrate,
-               '-ss', chapter['start_time'], '-to', chapter['end_time']]
+               '-ss', chapter['start_time'], '-to', chapter['end_time'], '-metadata', 'title=%s' % title]
 
-        if title is not None:
-            cmd.extend(['-metadata', 'title=%s' % (title % args)])
+        if album is not None:
+            cmd.extend(['-metadata', 'album=%s' % album])
 
-        cmd.extend(['-vn', output % args])
+        cmd.extend(['-vn', output % i])
         print(cmd)
         subprocess.check_output(cmd, universal_newlines=True)
+        break
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--input', help='Input file name', required=True)
     parser.add_argument('-o', '--output',
-                        help='Output file pattern (with two "%(chapter)s" and %(bitrate)" placeholders)', required=True)
-    parser.add_argument('-t', '--title',
-                        help='Title of mp3 pattern (with two "%(chapter)s" and %(bitrate)" placeholders)')
+                        help='Output file pattern (with one %d placeholder)', required=True)
     parser.add_argument('-a', '--activation-bytes', help='Activation bytes', required=True)
     parser.add_argument('-b', '--bitrate', help='Bitrate', default='64k')
     parser.add_argument('--ffmpeg', help='Path do directory containing ffmpeg/ffprobe', default='ffmpeg/bin')
+    parser.add_argument('--album', help='ID3v2 tag for Album, if not specified, uses from aax')
     namespace = parser.parse_args()
     print(namespace)
 
@@ -55,7 +53,8 @@ if __name__ == '__main__':
     activation_bytes = namespace.activation_bytes
     bitrate = namespace.bitrate
     ffmpeg = namespace.ffmpeg
+    album = namespace.album
     chapters = get_chapters(ffmpeg, input)
-    title = namespace.title
+    # title = namespace.title
     print(chapters)
-    parse_chapters(ffmpeg, chapters, input, output, activation_bytes, bitrate, title)
+    parse_chapters(ffmpeg, chapters, input, output, activation_bytes, bitrate, album)

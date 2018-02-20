@@ -9,7 +9,7 @@ two working. You really only need steps 1-4 to get the Activation Bytes.
 Then it's just a matter of calling
 
 ```
-python convert.py -i "The Tower of the Swallow.aax" -o "The Tower of the Swallow %(chapter)s %(bitrate)s.mp3" -a xxxxxx
+python convert.py -i "The Tower of the Swallow.aax" -o "The Tower of the Swallow %02d.mp3" -a xxxxxx
 ```
 
 and have your owned aax converted into mp3s, split by chapters.
