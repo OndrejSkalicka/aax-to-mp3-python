@@ -63,7 +63,7 @@ if __name__ == '__main__':
     # Collate args
     input = namespace.input
     out_arg = Path(input).stem
-    output = out_arg + '_%02d.' + 'mp3'
+    output = f'{out_arg}_%02d.mp3'
     activation_bytes = namespace.activation_bytes
     bitrate = namespace.bitrate
     ffmpeg = namespace.ffmpeg
