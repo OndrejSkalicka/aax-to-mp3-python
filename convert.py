@@ -3,6 +3,7 @@ import json
 import os
 import re
 import subprocess
+from pathlib import Path
 
 """
 See https://wphelp365.com/blog/ultimate-guide-downloading-converting-aax-mp3/ 
@@ -10,8 +11,7 @@ on how to use.
 Step 3 + 4 will get activation bytes. Step 5 is this script.
 
 Example:
-python convert.py -i "The Tower of the Swallow.aax" -o "The Tower of the 
-Swallow %02d.mp3" -a xxxxxx
+python convert.py -i "The Tower of the Swallow.aax" -a xxxxxx
 where -a is the activation code
 """
 
@@ -26,10 +26,7 @@ def get_chapters(ffmpeg, input):
 
 def parse_chapters(ffmpeg, chapters, input, output, activation_bytes, bitrate,
                    album):
-    i = 0
-    for chapter in chapters['chapters']:
-        i += 1
-
+    for i, chapter in enumerate(chapters['chapters']):
         title = chapter['tags']['title']
 
         cmd = ['ffmpeg', '-y',
@@ -42,17 +39,15 @@ def parse_chapters(ffmpeg, chapters, input, output, activation_bytes, bitrate,
         if album is not None:
             cmd.extend(['-metadata', 'album=%s' % album])
 
-        cmd.extend(['-c:a', 'mp3', '-vn', output % i])
+        cmd.extend(['-c:a', 'mp3', '-vn', output % i + 1])
         print(cmd)
+
         subprocess.check_output(cmd, universal_newlines=True)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--input', help='Input file name', required=True)
-    parser.add_argument('-o', '--output',
-                        help='Output file pattern',
-                        required=True)
     parser.add_argument('-a', '--activation-bytes', help='Activation bytes',
                         required=True)
     parser.add_argument('-b', '--bitrate', help='Bitrate', default='64k')
@@ -65,9 +60,10 @@ if __name__ == '__main__':
     namespace = parser.parse_args()
     print(namespace)
 
+    # Collate args
     input = namespace.input
-    out_arg = namespace.input.split('.')
-    output = out_arg[0] + '_%02d.' + 'mp3'
+    out_arg = Path(input).stem
+    output = out_arg + '_%02d.' + 'mp3'
     activation_bytes = namespace.activation_bytes
     bitrate = namespace.bitrate
     ffmpeg = namespace.ffmpeg
@@ -75,5 +71,6 @@ if __name__ == '__main__':
     chapters = get_chapters(ffmpeg, input)
     # title = namespace.title
     print(chapters)
+
     parse_chapters(ffmpeg, chapters, input, output, activation_bytes, bitrate,
                    album)
