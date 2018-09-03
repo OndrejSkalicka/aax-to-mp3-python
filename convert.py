@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -16,19 +17,21 @@ where -a is the activation code
 """
 
 
-def get_chapters(ffmpeg, input):
-    cmd = ['ffprobe', '-show_chapters', '-loglevel', 'error', '-print_format',
+def get_chapters(input):
+    ffprobe = shutil.which('ffprobe')
+    cmd = [ffprobe, '-show_chapters', '-loglevel', 'error', '-print_format',
            'json', input]
     output = subprocess.check_output(cmd, universal_newlines=True)
     chapters = json.loads(output)
     return chapters
 
 
-def parse_chapters(ffmpeg, chapters, input, activation_bytes, album):
+def parse_chapters(chapters, input, activation_bytes, album):
+    ffmpeg = shutil.which('ffmpeg')
     for i, chapter in enumerate(chapters['chapters']):
         title = chapter['tags']['title']
 
-        cmd = ['ffmpeg', '-y',
+        cmd = [ffmpeg, '-y',
                '-activation_bytes', activation_bytes,
                '-i', input,
                '-ss', chapter['start_time'],
@@ -51,9 +54,6 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--input', help='Input file name', required=True)
     parser.add_argument('-a', '--activation-bytes', help='Activation bytes',
                         required=True)
-    parser.add_argument('--ffmpeg',
-                        help='Path do directory containing ffmpeg/ffprobe',
-                        default='ffmpeg/bin')
     parser.add_argument('--album',
                         help='ID3v2 tag for Album, if not specified, '
                              'uses from aax')
@@ -63,10 +63,8 @@ if __name__ == '__main__':
     # Collate args
     input = namespace.input
     activation_bytes = namespace.activation_bytes
-    ffmpeg = namespace.ffmpeg
     album = namespace.album
-    chapters = get_chapters(ffmpeg, input)
-    # title = namespace.title
+    chapters = get_chapters(input)
     print(chapters)
 
-    parse_chapters(ffmpeg, chapters, input, activation_bytes, album)
+    parse_chapters(chapters, input, activation_bytes, album)
