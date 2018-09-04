@@ -19,6 +19,8 @@ where -a is the activation code
 
 def get_chapters(input):
     ffprobe = shutil.which('ffprobe')
+    if not ffprobe:
+        raise FileNotFoundError('ffprobe not found!')
     cmd = [ffprobe, '-show_chapters', '-loglevel', 'error', '-print_format',
            'json', input]
     output = subprocess.check_output(cmd, universal_newlines=True)
@@ -28,6 +30,8 @@ def get_chapters(input):
 
 def parse_chapters(chapters, input, activation_bytes, album):
     ffmpeg = shutil.which('ffmpeg')
+    if not ffmpeg:
+        raise FileNotFoundError('ffmpeg not found!')
     for i, chapter in enumerate(chapters['chapters']):
         title = chapter['tags']['title']
 
