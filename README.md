@@ -9,15 +9,11 @@ two working. You really only need steps 1-4 to get the Activation Bytes.
 Then it's just a matter of calling
 
 ```
-python convert.py -i "The Tower of the Swallow.aax" -o "The Tower of the Swallow %02d.mp3" -a xxxxxx
+python convert.py -i "The Tower of the Swallow.aax" -a xxxxxx
 ```
 
-and have your owned aax converted into mp3s, split by chapters.
-
-Use `-t "The Tower %s(chapter)"` to specify mp3 title.
+and have your owned aax converted into mp3s, split by chapters, automatically with '_{Chapter_number}' appended to the end.
 
 ## Why?
 
-Even though the above mentioned tutorial works great, my mp3 player 
-[MortPlayer for Android](https://play.google.com/store/apps/details?id=de.stohelit.audiobookplayer&hl=en) (I really 
-recommend) had some issues with mp3s longer than a couple of hours. So I wanted to have the book split by chapters.
+Splitting the very long audio book files by chapters seemed like a much more sensible way of handling extended audio.
